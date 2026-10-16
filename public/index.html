@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduPulse | Student Management System</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Application CSS -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+  <!-- ==================== TOAST NOTIFICATIONS CONTAINER ==================== -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- ==================== AUTHENTICATION SCREEN ==================== -->
+  <div id="auth-container" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="brand-logo">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <h2>EduPulse SMS</h2>
+        <p class="subtitle">Complete Student Management & Academic Information System</p>
+      </div>
+
+      <!-- Quick Demo Switcher -->
+      <div class="demo-quick-buttons">
+        <span class="demo-label"><i class="fa-solid fa-bolt"></i> Quick Demo Login:</span>
+        <div class="demo-btn-group">
+          <button type="button" class="btn btn-sm btn-outline" onclick="fillDemoCredentials('admin')">Admin</button>
+          <button type="button" class="btn btn-sm btn-outline" onclick="fillDemoCredentials('teacher')">Teacher</button>
+          <button type="button" class="btn btn-sm btn-outline" onclick="fillDemoCredentials('student')">Student</button>
+        </div>
+      </div>
+
+      <!-- Auth Tabs: Login / Register -->
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+        <button id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label><i class="fa-regular fa-envelope"></i> Email or Username</label>
+          <input type="text" id="login-identifier" required placeholder="admin@sms.edu" value="admin@sms.edu" class="form-control">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-lock"></i> Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••" value="Ocholla@" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-submit-btn">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In to Portal
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label><i class="fa-solid fa-user"></i> Full Name</label>
+          <input type="text" id="reg-fullname" required placeholder="John Doe" class="form-control">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-regular fa-user"></i> Username</label>
+          <input type="text" id="reg-username" required placeholder="johndoe" class="form-control">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-regular fa-envelope"></i> Email Address</label>
+          <input type="email" id="reg-email" required placeholder="john@sms.edu" class="form-control">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-lock"></i> Password</label>
+          <input type="password" id="reg-password" required placeholder="Create secure password" class="form-control">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-shield-halved"></i> Role</label>
+          <select id="reg-role" class="form-control">
+            <option value="student">Student</option>
+            <option value="teacher">Teacher / Instructor</option>
+            <option value="admin">Administrator</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-success btn-block btn-lg" id="register-submit-btn">
+          <i class="fa-solid fa-user-plus"></i> Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN DASHBOARD LAYOUT ==================== -->
+  <div id="main-layout" class="app-layout hidden">
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div class="brand-text">
+          <h3>EduPulse</h3>
+          <span>Academic Portal</span>
+        </div>
+      </div>
+
+      <!-- User Card in Sidebar -->
+      <div class="sidebar-user">
+        <div class="user-avatar" id="sidebar-user-avatar">AD</div>
+        <div class="user-info">
+          <h4 id="sidebar-user-name">Administrator</h4>
+          <span class="user-role-badge" id="sidebar-user-role">ADMIN</span>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="sidebar-nav">
+        <ul>
+          <li>
+            <a href="#dashboard" class="nav-item active" data-page="dashboard">
+              <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="admin-only teacher-only">
+            <a href="#students" class="nav-item" data-page="students">
+              <i class="fa-solid fa-user-graduate"></i> <span>Students</span>
+            </a>
+          </li>
+          <li class="admin-only">
+            <a href="#teachers" class="nav-item" data-page="teachers">
+              <i class="fa-solid fa-chalkboard-user"></i> <span>Faculty & Teachers</span>
+            </a>
+          </li>
+          <li>
+            <a href="#courses" class="nav-item" data-page="courses">
+              <i class="fa-solid fa-book-bookmark"></i> <span>Courses & Classes</span>
+            </a>
+          </li>
+          <li class="admin-only teacher-only">
+            <a href="#attendance" class="nav-item" data-page="attendance">
+              <i class="fa-solid fa-calendar-check"></i> <span>Attendance</span>
+            </a>
+          </li>
+          <li>
+            <a href="#grades" class="nav-item" data-page="grades">
+              <i class="fa-solid fa-award"></i> <span>Grades & Transcripts</span>
+            </a>
+          </li>
+          <li class="sidebar-fees-link">
+            <a href="#fees" class="nav-item" data-page="fees">
+              <i class="fa-solid fa-receipt"></i> <span>Fees & Payments</span>
+            </a>
+          </li>
+          <li>
+            <a href="#announcements" class="nav-item" data-page="announcements">
+              <i class="fa-solid fa-bullhorn"></i> <span>Notice Board</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <button class="btn btn-outline-danger btn-block btn-sm" onclick="handleLogout()">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Navigation Bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="sidebar-toggle" class="sidebar-toggle-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="page-title-box">
+            <h2 id="current-page-title">Dashboard Overview</h2>
+            <p id="current-page-subtitle">Welcome back, view campus analytics and updates.</p>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="date-badge">
+            <i class="fa-regular fa-calendar"></i>
+            <span id="current-date-display">Today</span>
+          </div>
+
+          <div class="user-profile-menu">
+            <div class="user-avatar-sm" id="topbar-avatar">A</div>
+            <span class="user-greeting" id="topbar-name">Admin</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Page Containers -->
+      <div class="content-wrapper">
+
+        <!-- ================= PAGE: DASHBOARD ================= -->
+        <section id="page-dashboard" class="page-section active">
+          <!-- KPI Cards Grid -->
+          <div class="kpi-grid" id="kpi-cards-container">
+            <!-- Dynamically injected stats cards -->
+          </div>
+
+          <!-- Charts & Analytics Row -->
+          <div class="dashboard-row" id="dashboard-charts-row">
+            <div class="card chart-card">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-chart-column"></i> Students by Department</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="deptChart" height="240"></canvas>
+              </div>
+            </div>
+
+            <div class="card chart-card">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-chart-pie"></i> Grade Distribution</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="gradesChart" height="240"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity & Announcements Row -->
+          <div class="dashboard-row">
+            <div class="card table-card">
+              <div class="card-header flex-between">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Student Admissions</h3>
+                <button class="btn btn-sm btn-link" onclick="navigateTo('students')">View All</button>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table" id="recent-students-table">
+                    <thead>
+                      <tr>
+                        <th>ID Code</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Enrolled Date</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="recent-students-tbody">
+                      <!-- Injected via dashboard.js -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="card announcements-preview-card">
+              <div class="card-header flex-between">
+                <h3><i class="fa-solid fa-bullhorn"></i> Campus Announcements</h3>
+                <button class="btn btn-sm btn-link" onclick="navigateTo('announcements')">All Notices</button>
+              </div>
+              <div class="card-body" id="dashboard-announcements-list">
+                <!-- Injected via dashboard.js -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PAGE: STUDENTS ================= -->
+        <section id="page-students" class="page-section hidden">
+          <div class="action-bar">
+            <div class="search-filters">
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="students-search" placeholder="Search by name, ID code, or email..." oninput="handleStudentSearch()">
+              </div>
+              <select id="students-dept-filter" class="form-control-inline" onchange="loadStudents()">
+                <option value="">All Departments</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Business Administration">Business Administration</option>
+                <option value="Electrical Engineering">Electrical Engineering</option>
+                <option value="General Studies">General Studies</option>
+              </select>
+              <select id="students-status-filter" class="form-control-inline" onchange="loadStudents()">
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Graduated">Graduated</option>
+                <option value="Suspended">Suspended</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="action-buttons admin-only">
+              <button class="btn btn-primary" onclick="openAddStudentModal()">
+                <i class="fa-solid fa-plus"></i> Add New Student
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>ID Code</th>
+                      <th>Student Name</th>
+                      <th>Email</th>
+                      <th>Department</th>
+                      <th>Phone</th>
+                      <th>Status</th>
+                      <th class="text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="students-table-body">
+                    <!-- Populated via students.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PAGE: TEACHERS ================= -->
+        <section id="page-teachers" class="page-section hidden">
+          <div class="action-bar">
+            <div class="search-filters">
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="teachers-search" placeholder="Search faculty by name or email..." oninput="handleTeacherSearch()">
+              </div>
+              <select id="teachers-dept-filter" class="form-control-inline" onchange="loadTeachers()">
+                <option value="">All Departments</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Business Administration">Business Administration</option>
+              </select>
+            </div>
+            <div class="action-buttons admin-only">
+              <button class="btn btn-primary" onclick="openAddTeacherModal()">
+                <i class="fa-solid fa-plus"></i> Add Faculty Member
+              </button>
+            </div>
+          </div>
+
+          <div class="grid-cards" id="teachers-cards-grid">
+            <!-- Populated via teachers.js -->
+          </div>
+        </section>
+
+        <!-- ================= PAGE: COURSES ================= -->
+        <section id="page-courses" class="page-section hidden">
+          <div class="action-bar">
+            <div class="search-filters">
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="courses-search" placeholder="Search courses by code or title..." oninput="handleCourseSearch()">
+              </div>
+              <select id="courses-dept-filter" class="form-control-inline" onchange="loadCourses()">
+                <option value="">All Departments</option>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Business Administration">Business Administration</option>
+              </select>
+            </div>
+            <div class="action-buttons admin-only">
+              <button class="btn btn-primary" onclick="openAddCourseModal()">
+                <i class="fa-solid fa-plus"></i> Create Course
+              </button>
+            </div>
+          </div>
+
+          <div class="grid-cards" id="courses-cards-grid">
+            <!-- Populated via courses.js -->
+          </div>
+        </section>
+
+        <!-- ================= PAGE: ATTENDANCE ================= -->
+        <section id="page-attendance" class="page-section hidden">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-clipboard-user"></i> Class Roll Call & Attendance Register</h3>
+            </div>
+            <div class="card-body">
+              <div class="attendance-filter-bar">
+                <div class="form-group mb-0">
+                  <label>Select Course</label>
+                  <select id="attendance-course-select" class="form-control" onchange="loadClassAttendanceSheet()">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+                <div class="form-group mb-0">
+                  <label>Session Date</label>
+                  <input type="date" id="attendance-date-select" class="form-control" onchange="loadClassAttendanceSheet()">
+                </div>
+                <div class="attendance-quick-actions">
+                  <button type="button" class="btn btn-outline-success btn-sm" onclick="markAllAttendance('Present')">
+                    <i class="fa-solid fa-check-double"></i> Mark All Present
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header flex-between">
+              <h4 id="attendance-sheet-title">Student Roll List</h4>
+              <button class="btn btn-success" id="save-attendance-btn" onclick="submitAttendanceBatch()">
+                <i class="fa-solid fa-floppy-disk"></i> Save Attendance Register
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Student ID</th>
+                      <th>Student Name</th>
+                      <th>Email</th>
+                      <th>Status</th>
+                      <th>Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody id="attendance-sheet-tbody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PAGE: GRADES ================= -->
+        <section id="page-grades" class="page-section hidden">
+          <div class="action-bar">
+            <div class="search-filters">
+              <div class="form-group mb-0">
+                <select id="grades-course-filter" class="form-control" onchange="loadGrades()">
+                  <option value="">All Courses</option>
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="grades-search" placeholder="Search student name..." oninput="handleGradesSearch()">
+              </div>
+            </div>
+            <div class="action-buttons admin-only teacher-only">
+              <button class="btn btn-primary" onclick="openGradeModal()">
+                <i class="fa-solid fa-pen-to-square"></i> Enter / Update Grade
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Student</th>
+                      <th>Course</th>
+                      <th>Assignments (20%)</th>
+                      <th>Midterm (30%)</th>
+                      <th>Final (50%)</th>
+                      <th>Total Score</th>
+                      <th>Letter Grade</th>
+                      <th>Remarks</th>
+                      <th class="text-right">Transcript</th>
+                    </tr>
+                  </thead>
+                  <tbody id="grades-table-body">
+                    <!-- Populated via grades.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PAGE: FEES ================= -->
+        <section id="page-fees" class="page-section hidden">
+          <!-- Official M-Pesa Receiving Account Banner -->
+          <div class="mpesa-recipient-notice mb-4" style="border-radius: var(--radius-lg); border: 1px solid #a7f3d0; box-shadow: var(--shadow-sm);">
+            <div class="recipient-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+            <div class="recipient-details">
+              <span class="recipient-label">Official M-Pesa Receiving Account:</span>
+              <div class="recipient-number">+254 746 942 848</div>
+              <small>Instant STK Push SDK Enabled &bull; Funds automatically credited to your student ledger upon confirmation</small>
+            </div>
+          </div>
+
+          <!-- Fee Summary Cards -->
+          <div class="kpi-grid mb-4" id="fee-summary-cards">
+            <!-- Populated via fees.js -->
+          </div>
+
+          <div class="action-bar">
+            <div class="search-filters">
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="fees-search" placeholder="Search student or fee description..." oninput="handleFeeSearch()">
+              </div>
+              <select id="fees-status-filter" class="form-control-inline" onchange="loadFees()">
+                <option value="">All Statuses</option>
+                <option value="Paid">Paid</option>
+                <option value="Partial">Partial</option>
+                <option value="Unpaid">Unpaid</option>
+              </select>
+            </div>
+            <div class="action-buttons admin-only">
+              <button class="btn btn-primary" onclick="openCreateFeeModal()">
+                <i class="fa-solid fa-file-invoice-dollar"></i> Generate Fee Invoice
+              </button>
+            </div>
+            <div class="action-buttons student-only">
+              <button class="btn btn-success" onclick="openStudentQuickPayModal()">
+                <i class="fa-solid fa-mobile-screen-button"></i> Pay via M-Pesa
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Invoice ID</th>
+                      <th>Student</th>
+                      <th>Fee Item</th>
+                      <th>Total Amount</th>
+                      <th>Paid Amount</th>
+                      <th>Balance</th>
+                      <th>Due Date</th>
+                      <th>Status</th>
+                      <th class="text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fees-table-body">
+                    <!-- Populated via fees.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= PAGE: ANNOUNCEMENTS ================= -->
+        <section id="page-announcements" class="page-section hidden">
+          <div class="action-bar flex-between">
+            <div class="page-title-mini">
+              <h3>Campus Notice Board</h3>
+              <p>Official circulars, timetable updates, and academic notifications.</p>
+            </div>
+            <div class="action-buttons admin-only teacher-only">
+              <button class="btn btn-primary" onclick="openCreateAnnouncementModal()">
+                <i class="fa-solid fa-plus"></i> Post Announcement
+              </button>
+            </div>
+          </div>
+
+          <div class="announcements-grid" id="announcements-full-grid">
+            <!-- Populated via announcements.js -->
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Student Form Modal (Add / Edit) -->
+  <div id="student-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="student-modal-title">Add New Student</h3>
+        <button class="modal-close" onclick="closeModal('student-modal')">&times;</button>
+      </div>
+      <form id="student-form" onsubmit="handleSaveStudent(event)">
+        <input type="hidden" id="student-form-id">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>First Name *</label>
+              <input type="text" id="sf-first-name" class="form-control" required placeholder="James">
+            </div>
+            <div class="form-group col-6">
+              <label>Last Name *</label>
+              <input type="text" id="sf-last-name" class="form-control" required placeholder="Ocholla">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Email Address *</label>
+              <input type="email" id="sf-email" class="form-control" required placeholder="james@example.com">
+            </div>
+            <div class="form-group col-6">
+              <label>Phone Number</label>
+              <input type="text" id="sf-phone" class="form-control" placeholder="+1-555-0199">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Department *</label>
+              <select id="sf-dept" class="form-control" required>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Business Administration">Business Administration</option>
+                <option value="Electrical Engineering">Electrical Engineering</option>
+                <option value="General Studies">General Studies</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label>Gender</label>
+              <select id="sf-gender" class="form-control">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Date of Birth</label>
+              <input type="date" id="sf-dob" class="form-control">
+            </div>
+            <div class="form-group col-6">
+              <label>Status</label>
+              <select id="sf-status" class="form-control">
+                <option value="Active">Active</option>
+                <option value="Graduated">Graduated</option>
+                <option value="Suspended">Suspended</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Residential Address</label>
+            <input type="text" id="sf-address" class="form-control" placeholder="123 Campus Way, Apt 4B">
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Guardian / Parent Name</label>
+              <input type="text" id="sf-guardian-name" class="form-control" placeholder="Parent or Sponsor">
+            </div>
+            <div class="form-group col-6">
+              <label>Guardian Phone</label>
+              <input type="text" id="sf-guardian-phone" class="form-control" placeholder="+1-555-0999">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('student-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="sf-submit-btn">Save Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Student Profile Detail Modal -->
+  <div id="student-detail-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3>Student Comprehensive Profile</h3>
+        <button class="modal-close" onclick="closeModal('student-detail-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="student-detail-body">
+        <!-- Rendered via students.js -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('student-detail-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Teacher Form Modal -->
+  <div id="teacher-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="teacher-modal-title">Add Faculty Member</h3>
+        <button class="modal-close" onclick="closeModal('teacher-modal')">&times;</button>
+      </div>
+      <form id="teacher-form" onsubmit="handleSaveTeacher(event)">
+        <input type="hidden" id="tf-id">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>First Name *</label>
+              <input type="text" id="tf-first-name" class="form-control" required>
+            </div>
+            <div class="form-group col-6">
+              <label>Last Name *</label>
+              <input type="text" id="tf-last-name" class="form-control" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Email *</label>
+              <input type="email" id="tf-email" class="form-control" required>
+            </div>
+            <div class="form-group col-6">
+              <label>Phone</label>
+              <input type="text" id="tf-phone" class="form-control">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Department *</label>
+              <select id="tf-dept" class="form-control" required>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Business Administration">Business Administration</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label>Designation</label>
+              <input type="text" id="tf-designation" class="form-control" placeholder="Professor / Lecturer">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Qualification</label>
+            <input type="text" id="tf-qualification" class="form-control" placeholder="Ph.D., M.Sc, etc.">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('teacher-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Faculty</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Course Form Modal -->
+  <div id="course-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="course-modal-title">Create New Course</h3>
+        <button class="modal-close" onclick="closeModal('course-modal')">&times;</button>
+      </div>
+      <form id="course-form" onsubmit="handleSaveCourse(event)">
+        <input type="hidden" id="cf-id">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Course Code *</label>
+              <input type="text" id="cf-code" class="form-control" required placeholder="CS301">
+            </div>
+            <div class="form-group col-6">
+              <label>Credits *</label>
+              <input type="number" id="cf-credits" class="form-control" min="1" max="6" value="3" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Course Title *</label>
+            <input type="text" id="cf-title" class="form-control" required placeholder="Web Application Development">
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Department *</label>
+              <select id="cf-dept" class="form-control" required>
+                <option value="Computer Science">Computer Science</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Business Administration">Business Administration</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label>Assigned Teacher</label>
+              <select id="cf-teacher" class="form-control">
+                <option value="">-- Select Instructor --</option>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="cf-desc" class="form-control" rows="3" placeholder="Syllabus outline and prerequisites..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('course-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Course</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Course Enrolled Students Modal -->
+  <div id="course-students-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <h3 id="course-students-modal-title">Enrolled Students</h3>
+        <button class="modal-close" onclick="closeModal('course-students-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="enroll-action-bar admin-only">
+          <select id="enroll-student-select" class="form-control-inline">
+            <option value="">-- Choose Student to Enroll --</option>
+          </select>
+          <button type="button" class="btn btn-sm btn-primary" onclick="handleEnrollStudentInCourse()">
+            <i class="fa-solid fa-user-plus"></i> Enroll Student
+          </button>
+        </div>
+        <div class="table-responsive mt-3">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID Code</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Enrollment Date</th>
+                <th>Grade</th>
+                <th class="text-right admin-only">Action</th>
+              </tr>
+            </thead>
+            <tbody id="course-students-tbody">
+              <!-- Injected via courses.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('course-students-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grade Entry Modal -->
+  <div id="grade-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Enter / Record Grade</h3>
+        <button class="modal-close" onclick="closeModal('grade-modal')">&times;</button>
+      </div>
+      <form id="grade-form" onsubmit="handleSaveGrade(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Course *</label>
+            <select id="gf-course" class="form-control" required onchange="populateStudentsForCourse(this.value)">
+              <option value="">-- Select Course --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Student *</label>
+            <select id="gf-student" class="form-control" required>
+              <option value="">-- Select Student --</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-4">
+              <label>Assignments (0-100)</label>
+              <input type="number" id="gf-assign" class="form-control" min="0" max="100" step="0.5" value="85" required>
+            </div>
+            <div class="form-group col-4">
+              <label>Midterm (0-100)</label>
+              <input type="number" id="gf-mid" class="form-control" min="0" max="100" step="0.5" value="80" required>
+            </div>
+            <div class="form-group col-4">
+              <label>Final Exam (0-100)</label>
+              <input type="number" id="gf-final" class="form-control" min="0" max="100" step="0.5" value="90" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Instructor Remarks</label>
+            <input type="text" id="gf-remarks" class="form-control" placeholder="Outstanding participation and homework.">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('grade-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Grade</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Official Transcript / Report Card Modal (Printable) -->
+  <div id="transcript-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-lg printable-card">
+      <div class="modal-header no-print">
+        <h3>Official Academic Transcript</h3>
+        <div class="header-btns">
+          <button class="btn btn-primary btn-sm" onclick="window.print()">
+            <i class="fa-solid fa-print"></i> Print Transcript
+          </button>
+          <button class="modal-close" onclick="closeModal('transcript-modal')">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" id="transcript-content">
+        <!-- Rendered via grades.js -->
+      </div>
+      <div class="modal-footer no-print">
+        <button type="button" class="btn btn-outline" onclick="closeModal('transcript-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Fee Invoice Modal -->
+  <div id="fee-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Generate Fee Invoice</h3>
+        <button class="modal-close" onclick="closeModal('fee-modal')">&times;</button>
+      </div>
+      <form id="fee-form" onsubmit="handleSaveFee(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Student *</label>
+            <select id="ff-student" class="form-control" required>
+              <!-- Injected dynamically -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fee Item Description *</label>
+            <select id="ff-type" class="form-control" required>
+              <option value="Semester Tuition Fee">Semester Tuition Fee</option>
+              <option value="Computer & Laboratory Fee">Computer & Laboratory Fee</option>
+              <option value="Library & Tech Resource Fee">Library & Tech Resource Fee</option>
+              <option value="Examination Fee">Examination Fee</option>
+              <option value="Campus Sports & Recreation">Campus Sports & Recreation</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Total Amount ($) *</label>
+              <input type="number" id="ff-amount" class="form-control" min="10" step="10" value="2500" required>
+            </div>
+            <div class="form-group col-6">
+              <label>Due Date *</label>
+              <input type="date" id="ff-due-date" class="form-control" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('fee-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Generate Invoice</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Record Payment Modal -->
+  <div id="payment-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Record Fee Payment</h3>
+        <button class="modal-close" onclick="closeModal('payment-modal')">&times;</button>
+      </div>
+      <form id="payment-form" onsubmit="handleRecordPayment(event)">
+        <input type="hidden" id="pay-fee-id">
+        <div class="modal-body">
+          <div class="payment-info-banner" id="payment-info-box">
+            <!-- Details shown dynamically -->
+          </div>
+          <div class="form-group">
+            <label>Payment Amount ($) *</label>
+            <input type="number" id="pay-amount" class="form-control" min="1" step="1" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label>Payment Method</label>
+              <select id="pay-method" class="form-control">
+                <option value="Credit Card">Credit Card</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Online Banking">Online Banking</option>
+                <option value="Cash">Cash</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label>Transaction / Ref No.</label>
+              <input type="text" id="pay-ref" class="form-control" placeholder="TXN-XXXXXX">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('payment-modal')">Cancel</button>
+          <button type="submit" class="btn btn-success">Record Payment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create Announcement Modal -->
+  <div id="announcement-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Post Campus Announcement</h3>
+        <button class="modal-close" onclick="closeModal('announcement-modal')">&times;</button>
+      </div>
+      <form id="announcement-form" onsubmit="handleSaveAnnouncement(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Notice Title *</label>
+            <input type="text" id="af-title" class="form-control" required placeholder="End of Semester Exam Schedule">
+          </div>
+          <div class="form-group">
+            <label>Category *</label>
+            <select id="af-category" class="form-control" required>
+              <option value="General">General</option>
+              <option value="Academic">Academic</option>
+              <option value="Exam">Exam</option>
+              <option value="Holiday">Holiday</option>
+              <option value="Event">Event</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Message Content *</label>
+            <textarea id="af-content" class="form-control" rows="4" required placeholder="Details of the announcement..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('announcement-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Publish Announcement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- M-Pesa STK Push Payment Modal -->
+  <div id="mpesa-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header mpesa-header">
+        <div class="mpesa-title">
+          <span class="mpesa-badge"><i class="fa-solid fa-mobile-screen-button"></i> M-PESA</span>
+          <h3>Pay Fees via M-Pesa</h3>
+        </div>
+        <button class="modal-close" onclick="closeModal('mpesa-modal')">&times;</button>
+      </div>
+
+      <div class="mpesa-recipient-notice">
+        <div class="recipient-icon"><i class="fa-solid fa-building-columns"></i></div>
+        <div class="recipient-details">
+          <span class="recipient-label">Official Receiving Phone Number:</span>
+          <div class="recipient-number">+254 746 942 848</div>
+          <small>EduPulse Institute &bull; Fee Collection Account</small>
+        </div>
+      </div>
+
+      <!-- Payment Method Tabs: STK Push vs Manual -->
+      <div class="auth-tabs" style="margin: 0 1.5rem 1rem 1.5rem;">
+        <button id="tab-stk" class="auth-tab active" onclick="switchMpesaTab('stk')">
+          <i class="fa-solid fa-bolt"></i> Instant STK Push (SDK)
+        </button>
+        <button id="tab-manual" class="auth-tab" onclick="switchMpesaTab('manual')">
+          <i class="fa-solid fa-receipt"></i> Enter M-Pesa SMS Code
+        </button>
+      </div>
+
+      <!-- STK Push Form -->
+      <form id="mpesa-stk-form" onsubmit="handleSendStkPush(event)">
+        <input type="hidden" id="mpesa-fee-id">
+        <div class="modal-body">
+          <div class="payment-info-banner" id="mpesa-fee-info-box"></div>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-phone"></i> Your M-Pesa Phone Number *</label>
+            <input type="tel" id="mpesa-phone" class="form-control" required placeholder="07XXXXXXXX or +2547XXXXXXXX">
+            <small style="color: #64748b; font-size: 0.75rem;">Enter the Safaricom phone number that will receive the STK push prompt.</small>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-money-bill-wave"></i> Amount to Pay ($ / KES) *</label>
+            <input type="number" id="mpesa-amount" class="form-control" min="1" step="1" required>
+          </div>
+
+          <!-- Live STK Push Simulation / Status box -->
+          <div id="stk-status-box" class="hidden stk-simulation-box">
+            <div class="stk-spinner"></div>
+            <div class="stk-content">
+              <h4 id="stk-status-title">Requesting STK Push...</h4>
+              <p id="stk-status-desc">Connecting to Safaricom Daraja gateway to initiate prompt on your phone...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('mpesa-modal')">Cancel</button>
+          <button type="submit" class="btn btn-success" id="mpesa-stk-btn">
+            <i class="fa-solid fa-paper-plane"></i> Send STK Push to Phone
+          </button>
+        </div>
+      </form>
+
+      <!-- Manual Code Form -->
+      <form id="mpesa-manual-form" class="hidden" onsubmit="handleManualMpesaVerify(event)">
+        <div class="modal-body">
+          <div class="payment-info-banner" id="mpesa-manual-info-box"></div>
+
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: #475569;">
+            <strong>Manual Payment Instructions:</strong>
+            <ol style="margin-left: 1.25rem; margin-top: 0.4rem; line-height: 1.6;">
+              <li>Open M-Pesa on your mobile device.</li>
+              <li>Select <strong>Send Money</strong> or <strong>Paybill</strong>.</li>
+              <li>Recipient Phone Number: <strong style="color: #0f172a; font-size: 0.95rem;">+254 746 942 848</strong></li>
+              <li>Enter the Amount and your M-Pesa PIN.</li>
+              <li>Paste the 10-character transaction code from your Safaricom SMS below (e.g. <code>RK92XM48PQ</code>).</li>
+            </ol>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-barcode"></i> M-Pesa Confirmation Code *</label>
+            <input type="text" id="mpesa-manual-code" class="form-control" required placeholder="e.g. RK92XM48PQ" style="text-transform: uppercase;">
+          </div>
+
+          <div class="form-group">
+            <label><i class="fa-solid fa-money-bill-wave"></i> Amount Paid *</label>
+            <input type="number" id="mpesa-manual-amount" class="form-control" min="1" step="1" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('mpesa-modal')">Cancel</button>
+          <button type="submit" class="btn btn-success" id="mpesa-manual-btn">
+            <i class="fa-solid fa-check"></i> Verify & Settle Invoice
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Official Fee Payment Receipt Modal (Printable) -->
+  <div id="receipt-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-lg printable-card">
+      <div class="modal-header no-print">
+        <h3>Official Fee Payment Receipt</h3>
+        <div class="header-btns">
+          <button class="btn btn-primary btn-sm" onclick="window.print()">
+            <i class="fa-solid fa-print"></i> Print Official Receipt
+          </button>
+          <button class="modal-close" onclick="closeModal('receipt-modal')">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" id="receipt-content">
+        <!-- Rendered via fees.js -->
+      </div>
+      <div class="modal-footer no-print">
+        <button type="button" class="btn btn-outline" onclick="closeModal('receipt-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script src="/js/students.js"></script>
+  <script src="/js/teachers.js"></script>
+  <script src="/js/courses.js"></script>
+  <script src="/js/attendance.js"></script>
+  <script src="/js/grades.js"></script>
+  <script src="/js/fees.js"></script>
+  <script src="/js/announcements.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
